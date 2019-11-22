@@ -73,7 +73,7 @@ def classify_sound():
     response = r.json()
 
     if response['status'] != 'ok':
-        logging.info('Response from classifer not ok with error: {}'.format(response['status']))
+        logging.info('Response from classifier not ok with error: {}'.format(response['status']))
         return
 
     # Publish to mqtt

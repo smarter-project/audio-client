@@ -1,11 +1,10 @@
-FROM python:3.6-slim
+FROM python:3.7-alpine
 
-RUN apt update &&\
-    apt install -yqq --no-install-recommends portaudio19-dev pulseaudio build-essential && \
+RUN apk update && \
+    apk add --no-cache --virtual .build-deps alpine-sdk && \
+    apk add --no-cache portaudio-dev pulseaudio pulseaudio-alsa alsa-plugins-pulse && \
     pip3 install --no-cache-dir paho-mqtt requests pyaudio jaeger-client opentracing_instrumentation && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt purge -yqq build-essential
-
+    apk del .build-deps
 
 COPY audio-record.py audio-record.py
 COPY client.conf /etc/pulse/client.conf
