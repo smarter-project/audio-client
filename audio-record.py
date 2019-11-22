@@ -59,12 +59,17 @@ def record_clip(seconds):
             return
 
 def classify_sound():
+    # Post audio clip to sound classification api
     model_endpoint = 'http://{}:{}/model/predict'.format(HOSTNAME, PORT)
     file_path = 'current.wav'
 
     with open(file_path, 'rb') as file:
         file_form = {'audio': (file_path, file, 'audio/wav')}
-        r = requests.post(url=model_endpoint, files=file_form)
+        try:
+            r = requests.post(url=model_endpoint, files=file_form)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            logging.info('Request to sound classifier failed with error: {}'.format(e))
+            return
 
     if r.status_code != 200:
         logging.info('Request to sound classifier failed with status code: {}'.format(r.status_code))
