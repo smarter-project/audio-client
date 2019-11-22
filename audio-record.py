@@ -56,9 +56,9 @@ def record_clip(seconds):
             waveFile.setframerate(RATE)
             waveFile.writeframes(b''.join(frames))
             waveFile.close()
+            return
 
 def classify_sound():
-
     model_endpoint = 'http://{}:{}/model/predict'.format(HOSTNAME, PORT)
     file_path = 'current.wav'
 
@@ -73,7 +73,7 @@ def classify_sound():
     response = r.json()
 
     if response['status'] != 'ok':
-        logging.info('Response from classifier not ok with error: {}'.format(response['status']))
+        logging.info('Error response from classifier: {}'.format(response['status']))
         return
 
     # Publish to mqtt
@@ -91,5 +91,7 @@ def handler_stop_signals(signum, frame):
 if __name__ == '__main__':
     while True:
         record_clip(RECORD_SECONDS)
+        logging.debug('Clip recorded')
         classify_sound()
+        logging.debug('Clip classified')
         os.sleep(SOUND_POLL_FREQUENCY)
