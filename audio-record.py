@@ -13,12 +13,11 @@ HOSTNAME = os.getenv('CLASSIFY_SERVICE_HOST', 'sound-classifier')
 PORT = str(os.getenv('CLASSIFY_SERVICE_PORT', '5000'))
 SOUND_POLL_FREQUENCY = int(os.getenv('CLASSIFY_SERVICE_POLL_FREQUENCY', 10))
 MQTT_BROKER_HOST = os.getenv('MQTT_BROKER_HOST', 'mqtt-debug')
-TOPIC = os.getenv('TRIGGERS_TOPIC', '/demo/sound_class')
+TOPIC = os.getenv('TOPIC', '/demo/sound_class')
 RECORD_SECONDS = int(os.getenv('RECORD_SECONDS', 10))
 
-
+# Set log level
 loglevel = os.getenv('LOG_LEVEL', 'info').lower()
-
 if loglevel == 'info':
     logging.basicConfig(level=logging.INFO)
 elif loglevel == 'warning':
