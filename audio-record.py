@@ -5,6 +5,7 @@ import requests
 import pyaudio
 import signal
 import paho.mqtt as mqtt
+import paho.mqtt.publish as publish
 import logging
 import json
 from time import sleep
@@ -82,7 +83,7 @@ def classify_sound(file_path):
         return
 
     # Publish to mqtt
-    result = mqtt.publish.single(TOPIC, json.dumps(response), hostname=MQTT_BROKER_HOST)
+    result = publish.single(TOPIC, json.dumps(response), hostname=MQTT_BROKER_HOST)
     if result is mqtt.MQTT_ERR_SUCCESS:
         logging.info('Sound classified successfully and results published to mqtt')
     elif result is mqtt.MQTT_ERR_NO_CONN:
