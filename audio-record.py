@@ -9,6 +9,7 @@ import logging
 import json
 
 # Set env variables
+DEMO = os.getenv('DEMO', '')
 HOSTNAME = os.getenv('CLASSIFY_SERVICE_HOST', 'sound-classifier')
 PORT = str(os.getenv('CLASSIFY_SERVICE_PORT', '5000'))
 SOUND_POLL_FREQUENCY = int(os.getenv('CLASSIFY_SERVICE_POLL_FREQUENCY', 10))
@@ -57,10 +58,9 @@ def record_clip(seconds):
             waveFile.close()
             return
 
-def classify_sound():
+def classify_sound(file_path):
     # Post audio clip to sound classification api
     model_endpoint = 'http://{}:{}/model/predict'.format(HOSTNAME, PORT)
-    file_path = 'current.wav'
 
     with open(file_path, 'rb') as file:
         file_form = {'audio': (file_path, file, 'audio/wav')}
@@ -94,8 +94,13 @@ def handler_stop_signals(signum, frame):
 
 if __name__ == '__main__':
     while True:
-        record_clip(RECORD_SECONDS)
-        logging.debug('Clip recorded')
-        classify_sound()
+        if DEMO:
+            for file in os.listdir("/samples"):
+                classify_sound(os.path.join("/samples", file))
+                os.sleep(SOUND_POLL_FREQUENCY)
+        else:
+            record_clip(RECORD_SECONDS)
+            logging.debug('Clip recorded')
+            classify_sound('current.wav')
         logging.debug('Clip classified')
         os.sleep(SOUND_POLL_FREQUENCY)

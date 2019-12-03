@@ -4,6 +4,9 @@
 - Records arbitrary length audio clips to send to an ML classification service
 
 ## Enviornment Variables
+- name: DEMO
+    - desc: If set to any valid string, microphone will not be used, and instead pre-recorded audio clips will be submitted in loop
+    - default: None
 - name: CLASSIFY_SERVICE_HOST
     - desc: Hostname of audio classification service
     - default: sound-classifier
