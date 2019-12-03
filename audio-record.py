@@ -7,6 +7,7 @@ import signal
 import paho.mqtt as mqtt
 import logging
 import json
+from time import sleep
 
 # Set env variables
 DEMO = os.getenv('DEMO', '')
@@ -96,11 +97,14 @@ if __name__ == '__main__':
     while True:
         if DEMO:
             for file in os.listdir("/samples"):
-                classify_sound(os.path.join("/samples", file))
-                os.sleep(SOUND_POLL_FREQUENCY)
+                file_path = os.path.join("/samples", file)
+                classify_sound(file_path)
+                logging.debug('Clip {} classified'.format(file_path))
+                sleep(SOUND_POLL_FREQUENCY)
+
         else:
             record_clip(RECORD_SECONDS)
             logging.debug('Clip recorded')
             classify_sound('current.wav')
-        logging.debug('Clip classified')
-        os.sleep(SOUND_POLL_FREQUENCY)
+            logging.debug('Clip classified')
+            sleep(SOUND_POLL_FREQUENCY)
