@@ -4,7 +4,7 @@ import wave
 import requests
 import pyaudio
 import signal
-import paho.mqtt as mqtt
+import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import logging
 import json
