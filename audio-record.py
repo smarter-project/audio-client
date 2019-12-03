@@ -4,7 +4,6 @@ import wave
 import requests
 import pyaudio
 import signal
-import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import logging
 import json
@@ -83,13 +82,11 @@ def classify_sound(file_path):
         return
 
     # Publish to mqtt
-    result = publish.single(TOPIC, json.dumps(response), hostname=MQTT_BROKER_HOST)
-    if result is mqtt.MQTT_ERR_SUCCESS:
+    try:
+        publish.single(TOPIC, json.dumps(response), hostname=MQTT_BROKER_HOST)
         logging.info('Sound classified successfully and results published to mqtt')
-    elif result is mqtt.MQTT_ERR_NO_CONN:
-        logging.info('Sound classified successfully but mqtt not connected to server')
-    elif result is mqtt.MQTT_ERR_QUEUE_SIZE:
-        logging.info('Sound classified successfully but mqtt message message queue currently full')
+    except Exception as e:
+        logging.info('Sound classified successfully but mqtt publish failed with error: {}'.format(e))
 
 def handler_stop_signals(signum, frame):
     sys.exit(0)
