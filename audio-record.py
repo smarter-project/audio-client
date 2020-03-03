@@ -11,6 +11,8 @@ from time import sleep
 
 # Set env variables
 DEMO = os.getenv('DEMO', '')
+FAAS = os.getenv('FAAS', '')
+SQUASH_FUNCTION_URL = os.getenv('SQUASH_FUCTION_URL', 'http://edgefaas:8080/squasher')
 HOSTNAME = os.getenv('CLASSIFY_SERVICE_HOST', 'sound-classifier')
 PORT = str(os.getenv('CLASSIFY_SERVICE_PORT', '5000'))
 SOUND_POLL_FREQUENCY = int(os.getenv('CLASSIFY_SERVICE_POLL_FREQUENCY', 10))
@@ -81,9 +83,23 @@ def classify_sound(file_path):
         logging.info('Error response from classifier: {}'.format(response['status']))
         return
 
-    # Publish to mqtt
+    # Squash json
+    if FAAS:
+        try:
+            faas_r = requests.post(url=SQUASH_FUNCTION_URL, json=response)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            logging.info('Request to faas squash failed with error: {}'.format(e))
+            return
+
+        squashed_json = faas_r.json()
+        
+    else:
+        # place holder squash function if faas unused
+        squashed_json = response
+    
+    # Published squashed json to mqtt
     try:
-        publish.single(TOPIC, json.dumps(response), hostname=MQTT_BROKER_HOST)
+        publish.single(TOPIC, json.dumps(squashed_json), hostname=MQTT_BROKER_HOST)
         logging.info('Sound classified successfully and results published to mqtt')
     except Exception as e:
         logging.info('Sound classified successfully but mqtt publish failed with error: {}'.format(e))

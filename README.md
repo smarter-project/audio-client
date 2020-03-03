@@ -7,6 +7,12 @@
 - name: DEMO
     - desc: If set to any valid string, microphone will not be used, and instead pre-recorded audio clips will be submitted in loop
     - default: None
+- name: FAAS
+    - desc: If set to any valid string, faas json formatting function will be called 
+    - default: None
+- name: SQUASH_FUNCTION_URL
+    - desc: URL of faas function to flatten json array
+    - default: http://edgefaas:8080/squasher
 - name: CLASSIFY_SERVICE_HOST
     - desc: Hostname of audio classification service
     - default: sound-classifier
