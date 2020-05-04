@@ -1,0 +1,77 @@
+---
+dashboard: Environment metrics
+priority: 1
+panel_groups:
+- group: Application Pod CPU
+  priority: -10
+  panels:
+  - type: area-chart
+    title: Pod CPU Usage
+    y_label: percentage
+    metrics:
+    - query_range: netdata_cgroup_cpu__average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: percentage
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1592
+  - type: area-chart
+    title: Pod CPU per Core Usage
+    y_label: percentage
+    metrics:
+    - query_range: netdata_cgroup_cpu_per_core__average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: percentage
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1593
+- group: Application Pod Memory
+  priority: -10
+  panels:
+  - type: area-chart
+    title: Pod Memory Usage by Allocation Type
+    y_label: MiB
+    metrics:
+    - query_range: netdata_cgroup_mem__average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: MiB
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1594
+  - type: area-chart
+    title: Pod Memory Activity
+    y_label: MiB/s
+    metrics:
+    - query_range: netdata_cgroup_mem_activity_MiB_pers_average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: MiB/s
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1595
+  - type: area-chart
+    title: Pod Memory Usage by Activity
+    y_label: MiB
+    metrics:
+    - query_range: netdata_cgroup_mem_usage__average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: MiB
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1596
+  - type: area-chart
+    title: Pod Memory Usage Limits
+    y_label: MiB
+    metrics:
+    - query_range: netdata_cgroup_mem_usage_limit__average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: MiB
+      label: "Name: {{name}}, Node: {{hostname}}"
+      metric_id: 1597
+- group: Application Pod Network
+  priority: -10
+  panels:
+  - type: area-chart
+    title: Pod Network I/O
+    y_label: kilobits/s
+    metrics:
+    - query_range: netdata_net_net_kilobits_pers_average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: kilobits/s
+      label: "Name: {{name}}, Interface: {{chart_family}}, Node: {{hostname}}"
+      metric_id: 1598
+  - type: area-chart
+    title: Pod Packet I/O
+    y_label: packets/s
+    metrics:
+    - query_range: netdata_net_packets_packets_pers_average{chart_id=~".*{{ci_project_name}}.*"}
+      unit: packets/s
+      label: "Name: {{name}}, Interface: {{chart_family}}, Node: {{hostname}}"
+      metric_id: 1599
