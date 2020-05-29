@@ -3,4 +3,21 @@ include:
     file: '/.gitlab-ci.yml'
 
 variables:
-  CI_BUILDX_ARCHS: "linux/amd64,linux/arm64,linux/arm"
+  CI_BUILDX_ARCHS: "linux/amd64"
+
+# extra build for the Nvidia version
+build:buildx-jetson:
+  extends: .build
+  only:
+    variables:
+      - $CI_BUILDX_ARCHS
+  except:
+    refs:
+       - master
+  timeout: 12 hours
+  script:
+    - update-binfmts --enable # Important: Ensures execution of other binary formats is enabled in the kernel
+    - docker buildx create --driver docker-container --use
+    - docker buildx inspect --bootstrap
+    - docker buildx ls
+    - docker buildx build -f Dockerfile.jetson --platform linux/arm64 --progress plain --pull -t "$CI_APPLICATION_REPOSITORY:${CI_APPLICATION_TAG}_jetson" --push .
