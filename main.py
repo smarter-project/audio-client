@@ -99,6 +99,11 @@ def record_clip(seconds):
             waveFile.setframerate(RATE)
             waveFile.writeframes(b''.join(frames))
             waveFile.close()
+
+            # Close all                                                                                                                           
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
             return
 
 def classify_sound(classes, file_path, ctx_embedding, ctx_classify, input_name_embedding, 
