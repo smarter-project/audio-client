@@ -15,22 +15,6 @@ import argparse
 from triton_client import *
 from config import DEFAULT_PCA_PARAMS
 
-# Create pyaudio stream and start recording in background
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 16000
-CHUNK = 16000
-
-audio = pyaudio.PyAudio()
-
-# start Recording
-stream = audio.open(
-    format=FORMAT,
-    channels=CHANNELS,
-    rate=RATE,
-    input=True,
-    frames_per_buffer=CHUNK)
-
 def generate_embeddings(ctx, input_name, output_name, wav_file):
     """
     Generates embeddings as per the Audioset VGG-ish model.
@@ -85,7 +69,7 @@ def classifier_pre_process(embeddings, time_stamp):
 def uint8_to_float32(x):
     return (np.float32(x) - 128.) / 128.
 
-def record_clip(seconds):
+def record_clip(stream, seconds):
     frames = []
 
     while True:
@@ -183,6 +167,23 @@ if __name__ == '__main__':
     # Create classification model context used to pass tensors to triton
     ctx_classify = InferContext(args.url, protocol, args.model_name_classify, args.model_version)
 
+    if not args.use_clips:
+        # Create pyaudio stream and start recording in background
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 1
+        RATE = 16000
+        CHUNK = 16000
+
+        audio = pyaudio.PyAudio()
+
+        # start Recording
+        stream = audio.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK)
+
     while True:
         if args.use_clips:
             for file in os.listdir(args.audio_file_dir):
@@ -193,7 +194,7 @@ if __name__ == '__main__':
                 sleep(args.sound_poll_freq)
 
         else:
-            record_clip(args.record_secs)
+            record_clip(stream, args.record_secs)
             logging.info('Clip recorded')
             classify_sound(args.classes, 'current.wav', ctx_embedding, ctx_classify, input_name_embedding, 
                 output_name_embedding, input_name_classify, output_name_classify)
