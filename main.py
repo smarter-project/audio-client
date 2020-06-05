@@ -15,6 +15,22 @@ import argparse
 from triton_client import *
 from config import DEFAULT_PCA_PARAMS
 
+# Create pyaudio stream and start recording in background
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
+CHUNK = 16000
+
+audio = pyaudio.PyAudio()
+
+# start Recording
+stream = audio.open(
+    format=FORMAT,
+    channels=CHANNELS,
+    rate=RATE,
+    input=True,
+    frames_per_buffer=CHUNK)
+
 def generate_embeddings(ctx, input_name, output_name, wav_file):
     """
     Generates embeddings as per the Audioset VGG-ish model.
@@ -70,21 +86,6 @@ def uint8_to_float32(x):
     return (np.float32(x) - 128.) / 128.
 
 def record_clip(seconds):
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 16000
-    CHUNK = 16000
-
-    audio = pyaudio.PyAudio()
-
-    # start Recording
-    stream = audio.open(
-        format=FORMAT,
-        channels=CHANNELS,
-        rate=RATE,
-        input=True,
-        frames_per_buffer=CHUNK)
-
     frames = []
 
     while True:
@@ -99,11 +100,6 @@ def record_clip(seconds):
             waveFile.setframerate(RATE)
             waveFile.writeframes(b''.join(frames))
             waveFile.close()
-
-            # Close all                                                                                                                           
-            stream.stop_stream()
-            stream.close()
-            audio.terminate()
             return
 
 def classify_sound(classes, file_path, ctx_embedding, ctx_classify, input_name_embedding, 
@@ -130,6 +126,10 @@ def classify_sound(classes, file_path, ctx_embedding, ctx_classify, input_name_e
         logging.info('Sound classified successfully but mqtt publish failed with error: {}'.format(e))
 
 def handler_stop_signals(signum, frame):
+    # Close all                                                                                                                           
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
     sys.exit(0)
 
 if __name__ == '__main__':
