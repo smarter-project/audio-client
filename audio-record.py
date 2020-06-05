@@ -29,22 +29,7 @@ elif loglevel == 'warning':
 elif loglevel == 'debug':
     logging.basicConfig(level=logging.DEBUG)
 
-def record_clip(seconds):
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 16000
-    CHUNK = 16000
-
-    audio = pyaudio.PyAudio()
-
-    # start Recording
-    stream = audio.open(
-        format=FORMAT,
-        channels=CHANNELS,
-        rate=RATE,
-        input=True,
-        frames_per_buffer=CHUNK)
-
+def record_clip(stream, seconds):
     frames = []
 
     while True:
@@ -59,11 +44,6 @@ def record_clip(seconds):
             waveFile.setframerate(RATE)
             waveFile.writeframes(b''.join(frames))
             waveFile.close()
-
-            # Close all                                                                                                                           
-            stream.stop_stream()
-            stream.close()
-            audio.terminate()
             return
 
 def classify_sound(file_path):
@@ -113,6 +93,22 @@ def handler_stop_signals(signum, frame):
     sys.exit(0)
 
 if __name__ == '__main__':
+    if not DEMO:
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 1
+        RATE = 16000
+        CHUNK = 16000
+
+        audio = pyaudio.PyAudio()
+
+        # start Recording
+        stream = audio.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK)
+
     while True:
         if DEMO:
             for file in os.listdir("/samples"):
@@ -122,7 +118,7 @@ if __name__ == '__main__':
                 sleep(SOUND_POLL_FREQUENCY)
 
         else:
-            record_clip(RECORD_SECONDS)
+            record_clip(stream, RECORD_SECONDS)
             logging.debug('Clip recorded')
             classify_sound('current.wav')
             logging.debug('Clip classified')
