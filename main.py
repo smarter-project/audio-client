@@ -12,10 +12,13 @@ import vggish_input
 import vggish_params
 import vggish_postprocess
 import argparse
-from triton_client import *
+import tritongrpcclient
+import tritonhttpclient
+from tritonclientutils import InferenceServerException
 from config import DEFAULT_PCA_PARAMS
 
-def generate_embeddings(ctx, input_name, output_name, wav_file):
+
+def generate_embeddings(model_version, client_class, client, wav_file):
     """
     Generates embeddings as per the Audioset VGG-ish model.
     Post processes embeddings with PCA Quantization
@@ -26,10 +29,22 @@ def generate_embeddings(ctx, input_name, output_name, wav_file):
           containing the PCA-transformed and quantized version of the input.
     """
     examples_batch = vggish_input.wavfile_to_examples(wav_file)
-    result = ctx.run(
-        { input_name : (examples_batch.astype(np.float32),) },
-        { output_name : InferContext.ResultFormat.RAW })
-    return vggish_postprocess.Postprocessor(DEFAULT_PCA_PARAMS).postprocess(result['vggish/embedding'][0]) # todo: turn this into a custom backend to create triton ensemble
+
+    # Create request input for embeddings model
+    request_input = client_class.InferInput(
+        'vggish/input_features', examples_batch.shape, 'FP32')
+    request_input.set_data_from_numpy(examples_batch.astype(np.float32))
+
+    # Create Request Output containers
+    embeddings = client_class.InferRequestedOutput('vggish/embedding')
+
+    # Run inference
+    result = client.infer('vggish', (request_input,),
+                          model_version=model_version, outputs=(embeddings,))
+
+    # todo: turn this into a custom backend to create triton ensemble
+    return vggish_postprocess.Postprocessor(DEFAULT_PCA_PARAMS).postprocess(result.as_numpy('vggish/embedding'))
+
 
 def classifier_pre_process(embeddings, time_stamp):
     """
@@ -66,8 +81,10 @@ def classifier_pre_process(embeddings, time_stamp):
     embeddings = uint8_to_float32(embeddings)
     return embeddings
 
+
 def uint8_to_float32(x):
     return (np.float32(x) - 128.) / 128.
+
 
 def record_clip(stream, seconds):
     frames = []
@@ -86,35 +103,55 @@ def record_clip(stream, seconds):
             waveFile.close()
             return
 
-def classify_sound(classes, file_path, ctx_embedding, ctx_classify, input_name_embedding, 
-                    output_name_embedding, input_name_classify, output_name_classify):
-    raw_embeddings = generate_embeddings(ctx_embedding, input_name_embedding, output_name_embedding, file_path)
+
+def classify_sound(classes, file_path, client_class, client, model_version):
+    raw_embeddings = generate_embeddings(
+        model_version, client_class, client, file_path)
     embeddings_processed = classifier_pre_process(raw_embeddings, 0)
 
-    result = ctx_classify.run(
-        { input_name_classify : (embeddings_processed,) },
-        { output_name_classify : (InferContext.ResultFormat.CLASS, classes) })
-    
+    # Create request input for embeddings model
+    request_input = client_class.InferInput(
+        'input_1', embeddings_processed.shape, 'FP32')
+    request_input.set_data_from_numpy(embeddings_processed.astype(np.float32))
+
+    # Create Request Output containers
+    if client_class == tritonhttpclient:
+        classifications_request = client_class.InferRequestedOutput(
+            'activation_4/Sigmoid', binary_data=True, class_count=classes)
+    else:
+        classifications_request = client_class.InferRequestedOutput(
+            'activation_4/Sigmoid', class_count=classes)
+
+    # Run inference
+    results = client.infer('ambient_sound_clf', (request_input,),
+                          model_version=model_version, outputs=(classifications_request,))
+
+    classifications = results.as_numpy('activation_4/Sigmoid')
+
     # iterate through top CLASSES results and construct mqtt message
     msg = {}
-    for idx, classification in enumerate(result['activation_4/Sigmoid'][0]):
-        msg['label' + str(idx)] = classification[2]
-        msg['probability' + str(idx)] = classification[1]
+    for idx, classification in enumerate(classifications):
+        msg['label' + str(idx)] = classification.decode('ascii').split(':')[2]
+        msg['probability' + str(idx)] = classification.decode('ascii').split(':')[0]
     logging.info(msg)
 
     # Publish msg to mqtt
     try:
         publish.single(TOPIC, json.dumps(msg), hostname=MQTT_BROKER_HOST)
-        logging.info('Sound classified successfully and results published to mqtt')
+        logging.info(
+            'Sound classified successfully and results published to mqtt')
     except Exception as e:
-        logging.info('Sound classified successfully but mqtt publish failed with error: {}'.format(e))
+        logging.info(
+            'Sound classified successfully but mqtt publish failed with error: {}'.format(e))
+
 
 def handler_stop_signals(signum, frame):
-    # Close all                                                                                                                           
+    # Close all
     stream.stop_stream()
     stream.close()
     audio.terminate()
     sys.exit(0)
+
 
 if __name__ == '__main__':
 
@@ -132,40 +169,40 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action="store_true",
+                        required=False, default=False, help='Enable verbose output')
     parser.add_argument('-c', '--classes', type=int, required=False, default=os.getenv('CLASSES', 5),
                         help='Number of class results to report. Default is 5.')
     parser.add_argument('-m', '--model-name-classify', type=str, required=False, default=os.getenv('MODEL_NAME_CLASSIFY', 'ambient_sound_clf'),
                         help='Name of audio classification model')
     parser.add_argument('-e', '--model-name-embedding', type=str, required=False, default=os.getenv('MODEL_NAME_EMBEDDING', 'vggish'),
                         help='Name of embedding model')
-    parser.add_argument('-x', '--model-version', type=int, required=False,
+    parser.add_argument('-x', '--model-version', type=str, required=False, default="",
                         help='Version of model. Default is to use latest version.')
     parser.add_argument('-u', '--url', type=str, required=False, default=os.getenv('TRITON_URL', 'localhost:8000'),
                         help='Inference server URL. Default is localhost:8000.')
     parser.add_argument('-p', '--sound-poll-freq', type=int, required=False, default=os.getenv('CLASSIFY_SERVICE_POLL_FREQUENCY', 10),
                         help='Sound poll frequency.')
+    parser.add_argument('--protocol', type=str,
+                        default=os.getenv('PROTOCOL', 'HTTP'))
     parser.add_argument('-r', '--record-secs', type=int, required=False, default=os.getenv('RECORD_SECONDS', 10),
                         help='Seconds to record. Default is 10')
     parser.add_argument('-d', '--use-clips', action="store_true")
-    parser.add_argument('--audio_file_dir', type=str, required=False, default='/samples')
+    parser.add_argument('--audio_file_dir', type=str,
+                        required=False, default='/samples')
 
     args = parser.parse_args()
 
-    protocol = ProtocolType.from_str('HTTP')
-
-    # Fetch model information for embedding model from triton server
-    input_name_embedding, output_name_embedding, format_embedding, dtype_embedding = parse_model(
-        args.url, protocol, args.model_name_embedding, 1)
-
-    # Fetch model information for classificaiton model from triton server
-    input_name_classify, output_name_classify, format_classify, dtype_classify = parse_model(
-        args.url, protocol, args.model_name_classify, 1)
-
-    # Create embedding model context used to pass tensors to triton
-    ctx_embedding = InferContext(args.url, protocol, args.model_name_embedding, args.model_version)
-
-    # Create classification model context used to pass tensors to triton
-    ctx_classify = InferContext(args.url, protocol, args.model_name_classify, args.model_version)
+    if args.protocol.lower() == "grpc":
+        # Create gRPC client for communicating with the server
+        triton_client = tritongrpcclient.InferenceServerClient(
+            url=args.url, verbose=args.verbose)
+        triton_class = tritongrpcclient
+    else:
+        # Create HTTP client for communicating with the server
+        triton_client = tritonhttpclient.InferenceServerClient(
+            url=args.url, verbose=args.verbose)
+        triton_class = tritonhttpclient
 
     if not args.use_clips:
         # Create pyaudio stream and start recording in background
@@ -188,15 +225,15 @@ if __name__ == '__main__':
         if args.use_clips:
             for file in os.listdir(args.audio_file_dir):
                 file_path = os.path.join(args.audio_file_dir, file)
-                classify_sound(args.classes, file_path, ctx_embedding, ctx_classify, input_name_embedding, 
-                    output_name_embedding, input_name_classify, output_name_classify)
+                classify_sound(args.classes, file_path,
+                               triton_class, triton_client, args.model_version)
                 logging.info('Clip {} classified'.format(file_path))
                 sleep(args.sound_poll_freq)
 
         else:
             record_clip(stream, args.record_secs)
             logging.info('Clip recorded')
-            classify_sound(args.classes, 'current.wav', ctx_embedding, ctx_classify, input_name_embedding, 
-                output_name_embedding, input_name_classify, output_name_classify)
+            classify_sound(args.classes, 'current.wav',
+                           triton_class, triton_client, args.model_version)
             logging.info('Clip classified')
             sleep(args.sound_poll_freq)
