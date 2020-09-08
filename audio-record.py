@@ -80,6 +80,19 @@ def classify_sound(file_path):
         
     else:
         # place holder squash function if faas unused
+        dictionary = {}
+        idx = 0
+
+        for item in response['predictions']:
+            lbl = "label" + str(idx)
+            prb = "probability" + str(idx)
+            dictionary[lbl] = item['label']
+            dictionary[prb] = item['probability']
+            idx += 1
+
+        del response['predictions']
+        response.update(dictionary)
+
         squashed_json = response
     
     # Published squashed json to mqtt
