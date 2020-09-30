@@ -137,7 +137,7 @@ def classify_sound(classes, file_path, client_class, client, model_version):
 
     # Publish msg to mqtt
     try:
-        publish.single(TOPIC, json.dumps(msg), hostname=MQTT_BROKER_HOST)
+        publish.single(args.mqtt_topic, json.dumps(msg), hostname=args.mqtt_broker_host)
         logging.info(
             'Sound classified successfully and results published to mqtt')
     except Exception as e:
@@ -154,11 +154,6 @@ def handler_stop_signals(signum, frame):
 
 
 if __name__ == '__main__':
-
-    # Set env variables
-    MQTT_BROKER_HOST = os.getenv('MQTT_BROKER_HOST', 'mqtt-debug')
-    TOPIC = os.getenv('TOPIC', '/demo/sound_class')
-
     # Set log level
     loglevel = os.getenv('LOG_LEVEL', 'info').lower()
     if loglevel == 'info':
@@ -170,7 +165,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action="store_true",
-                        required=False, default=False, help='Enable verbose output')
+                        required=False, default=False, help='Enable verbose output for triton')
     parser.add_argument('-c', '--classes', type=int, required=False, default=os.getenv('CLASSES', 5),
                         help='Number of class results to report. Default is 5.')
     parser.add_argument('-m', '--model-name-classify', type=str, required=False, default=os.getenv('MODEL_NAME_CLASSIFY', 'ambient_sound_clf'),
@@ -188,8 +183,14 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--record-secs', type=int, required=False, default=os.getenv('RECORD_SECONDS', 10),
                         help='Seconds to record. Default is 10')
     parser.add_argument('-d', '--use-clips', action="store_true")
-    parser.add_argument('--audio_file_dir', type=str,
-                        required=False, default='/samples')
+    parser.add_argument('--audio-file-dir', type=str,
+                        required=False, default=os.getenv('AUDIO_FILES', '/samples'))
+    parser.add_argument('-b', '--mqtt-broker-host', type=str, required=False, default=os.getenv('MQTT_BROKER_HOST', 'fluent-bit'),
+                        help='mqtt broker host')
+    parser.add_argument("--mqtt-broker-port", type=int, required=False, default=os.getenv('MQTT_BROKER_PORT', '1883'),
+                        help="port number of the mqtt server (1024 to 65535) default 1883")
+    parser.add_argument('-t', '--mqtt-topic', type=str, required=False, default=os.getenv('MQTT_TOPIC', '/demo'),
+                        help='mqtt broker topic')
 
     args = parser.parse_args()
 
