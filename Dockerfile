@@ -1,7 +1,7 @@
 FROM registry.gitlab.com/arm-research/smarter/jetpack-triton:arm64_client_base as base
 
 
-FROM debian:sid-20200514-slim
+FROM debian:bullseye-20200908-slim
 
 # Ensure apt won't prompt for selecting options
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,12 +19,11 @@ RUN apt update && apt install -yqq --no-install-recommends \
         python3-numpy \
         python3-grpcio \
         python3-scipy \
-        python3-pyaudio \
         python3-numba \
         ca-certificates \
         libhdf5-dev \
         libffi-dev \
-	    libssl-dev \
+	libssl-dev \
         python3-paho-mqtt \
         portaudio19-dev \
         pulseaudio && \
@@ -36,7 +35,8 @@ RUN python3 -m pip install --upgrade \
         tritonhttpclient-2.1.0.dev0-py3-none-any.whl \
         tritongrpcclient-2.1.0.dev0-py3-none-any.whl \
         tritonclientutils-2.1.0.dev0-py3-none-any.whl \
-        resampy
+        resampy \
+        pyaudio
 
 COPY *.py vggish_pca_params.npz ./
 
