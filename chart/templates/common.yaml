@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.application.appName }}
+  namespace: {{ .Values.application.namespace }}
+  labels:
+    name: {{ .Values.application.appName }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Values.application.appName }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.application.appName }}
+    spec:
+      nodeSelector:
+        {{ .Values.application.appName }}: enabled
+      tolerations:
+      - key: "smarter.type"
+        operator: "Equal"
+        value: "edge"
+        effect: "NoSchedule"
+      hostname: {{ .Values.application.appName }}
+      initContainers:
+      - name: init-pulse
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nslookup {{ .Values.configuration.pulseaudio.host }}; do echo waiting for pulseaudio; sleep 2; done;']
+      containers:
+      - name: {{ .Values.application.appName }}
+        image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        #command: ["/bin/sh"]
+        #args: ["-c", "while true; do sleep 10;done"]
+        command: ["python3"]
+        args: ["main.py", "-c", "5"]
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: PROTOCOL
+          value: HTTP
+        - name: CLASSIFY_SERVICE_POLL_FREQUENCY
+          value: "{{ .Values.configuration.pollfrequency }}"
+        - name: PULSE_SOURCE
+          value: {{ .Values.configuration.pulsesource }}
+        - name: PULSE_SERVER
+          value: tcp:{{ .Values.configuration.pulseaudio.host }}:{{ .Values.configuration.pulseaudio.port }}
+        - name: MQTT_BROKER_HOST
+          value: {{ .Values.configuration.mqtt.host }}
+        - name: ADMISSION_CONTROLLER_URL
+          value: {{ .Values.configuration.admission_controller.host }}:{{ .Values.configuration.admission_controller.port }}
+        - name: LOG_LEVEL
+          value: {{ .Values.configuration.loglevel }}
+      terminationGracePeriodSeconds: 30

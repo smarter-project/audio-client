@@ -1,0 +1,25 @@
+#
+
+application:
+  namespace: smarter
+  appName: smarter-audio-client
+
+image:
+  #repository: imtest
+  repository: registry.gitlab.com/smarter-project/edge-workloads/audio-client/feature-admission-controller
+  # @default -- chart.appVersion
+  tag: ""
+  pullPolicy: IfNotPresent
+
+configuration:
+  pulsesource: alsa_input.hw_1_0
+  loglevel: INFO
+  pollfrequency: 20
+  mqtt:
+    host: smarter-fluent-bit
+  admission_controller:
+    host: smarter-admission-controller
+    port: 2520
+  pulseaudio:
+    host: smarter-pulseaudio
+    port: 4713
