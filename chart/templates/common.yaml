@@ -42,9 +42,15 @@ spec:
         - name: PROTOCOL
           value: HTTP
         - name: CLASSIFY_SERVICE_POLL_FREQUENCY
+<<<<<<< HEAD
           value: "{{ .Values.configuration.pollfrequency }}"
         - name: PULSE_SOURCE
           value: {{ .Values.configuration.pulsesource }}
+=======
+          value: "20"
+        - name: PULSE_SOURCE
+          value: alsa_input.hw_2_0
+>>>>>>> ebc66f6 (Add helm chart)
         - name: PULSE_SERVER
           value: tcp:{{ .Values.configuration.pulseaudio.host }}:{{ .Values.configuration.pulseaudio.port }}
         - name: MQTT_BROKER_HOST
@@ -52,5 +58,9 @@ spec:
         - name: ADMISSION_CONTROLLER_URL
           value: {{ .Values.configuration.admission_controller.host }}:{{ .Values.configuration.admission_controller.port }}
         - name: LOG_LEVEL
+<<<<<<< HEAD
           value: {{ .Values.configuration.loglevel }}
+=======
+          value: "INFO"
+>>>>>>> ebc66f6 (Add helm chart)
       terminationGracePeriodSeconds: 30
