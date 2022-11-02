@@ -1,17 +1,11 @@
-FROM registry.gitlab.com/arm-research/smarter/jetpack-triton:arm64_client_base as base
-
-
-FROM debian:bullseye-20200908-slim
+FROM ubuntu:focal-20221019
 
 # Ensure apt won't prompt for selecting options
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY --from=base /workspace/install/python/tritonhttpclient-2.1.0.dev0-py3-none-any.whl tritonhttpclient-2.1.0.dev0-py3-none-any.whl
-COPY --from=base /workspace/install/python/tritongrpcclient-2.1.0.dev0-py3-none-any.whl tritongrpcclient-2.1.0.dev0-py3-none-any.whl
-COPY --from=base /workspace/install/python/tritonclientutils-2.1.0.dev0-py3-none-any.whl tritonclientutils-2.1.0.dev0-py3-none-any.whl
-
 RUN apt update && apt install -yqq --no-install-recommends \
         curl \
+        wget \
         pkg-config \
         build-essential \
         python3-pip \
@@ -23,22 +17,24 @@ RUN apt update && apt install -yqq --no-install-recommends \
         ca-certificates \
         libhdf5-dev \
         libffi-dev \
-	libssl-dev \
+        libssl-dev \
         python3-paho-mqtt \
         portaudio19-dev \
         pulseaudio && \
-    rm -rf /var/lib/apt/lists/*
+        rm -rf /var/lib/apt/lists/* && \
+        wget https://images.getsmarter.io/ml-models/audio-client-models.tar.gz && \
+        tar -xvzf audio-client-models.tar.gz && \
+        rm audio-client-models.tar.gz
 
 RUN python3 -m pip install --upgrade \
         wheel \
         setuptools \
-        tritonhttpclient-2.1.0.dev0-py3-none-any.whl \
-        tritongrpcclient-2.1.0.dev0-py3-none-any.whl \
-        tritonclientutils-2.1.0.dev0-py3-none-any.whl \
+        tritonclient[all] \
         resampy \
-        pyaudio
+        pyaudio \
+        requests
 
-COPY *.py vggish_pca_params.npz ./
+COPY *.py vggish_pca_params.npz *.classes *.pbtxt ./
 
 CMD [ "bash" ]
 

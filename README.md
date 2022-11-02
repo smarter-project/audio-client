@@ -25,8 +25,12 @@
     - default: vggish
 - name: TRITON_URL
     - desc: URL to access triton with
-    - flag: `-u,--url`
+    - flag: `-u,--triton-url`
     - default: localhost:8000
+- name: ADMISSION_CONTROLLER_URL
+    - desc: url to access admission controller, default is empty string. If set, triton url will be overwritten with triton within the admission controller
+    - flag: `--admission-controller-url`
+    - default: none
 - name: CLASSIFY_SERVICE_POLL_FREQUENCY
     - desc: Seconds in between clip recordings
     - flag: `-p,--sound-poll-freq`
@@ -39,6 +43,7 @@
     - desc: How long each recorded clip should be
     - flag: `-r,--record-secs`
     - default: 10 seconds
+    - max: 40 seconds
 - name: AUDIO_FILES
     - desc: Filepath for audio files to be used
     - flag: `--audio-file-dir`

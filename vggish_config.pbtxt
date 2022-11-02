@@ -1,0 +1,17 @@
+name: "vggish"
+platform: "tensorflow_graphdef"
+max_batch_size: 45
+input [
+  {
+    name: "vggish/input_features"
+    data_type: TYPE_FP32
+    dims: [ 96, 64 ]
+  }
+]
+output [
+  {
+    name: "vggish/embedding"
+    data_type: TYPE_FP32
+    dims: [ 128 ]
+  }
+]
