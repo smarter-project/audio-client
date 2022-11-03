@@ -33,6 +33,10 @@ This chart provides an example workload for Smarter Edge. The example processes 
     defaults smarter-pulseaudio
   * port
     default to 4713
+
+## Usage
+
+```
 helm install smarter-audio-client chart
 ```
 
