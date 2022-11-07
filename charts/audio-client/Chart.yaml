@@ -1,9 +1,9 @@
 apiVersion: v2
 name: smarter-audio-client
 description: smarter-audio-client chart for SMARTER edge devices
-home: https://gitlab.com/smarter-project/edge-workloads/audio-client
-version: 0.0.1
-appVersion: 0.0.2
+home: https://getsmarter.io
+version: 0.0.2
+appVersion: 0.0.3
 kubeVersion: ">=1.16.0-0"
 keywords:
   - kubernetes
@@ -11,8 +11,8 @@ keywords:
   - triton
   - audio-client
 sources:
-  - https://gitlab.com/smarter-project/edge-workloads/audio-client/charts
-
+  - https://github.com/smarter-project/audio-client
+icon: https://gitlab.com/uploads/-/system/group/avatar/59012546/ARM1636_Project_Logo_ST2_RGB_V1.png
 annotations:
   artifacthub.io/changes: |
     - Fix template
@@ -23,5 +23,5 @@ annotations:
       email: alexandref75@gmail.com
   artifacthub.io/prerelease: "false"
   artifacthub.io/signKey: |
-    fingerprint: 82AD709FEC4ECA4C84B093889BDC9DE410CFC23B
-    url: https://keybase.io/alexandref75/pgp_keys.asc
+    fingerprint: 71EDA4E3D652DC73EB09E3A5387D298C169CF24E
+    url: https://smarter-project.github.io/documentation/pgp_keys.asc

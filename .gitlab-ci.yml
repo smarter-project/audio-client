@@ -1,3 +1,0 @@
-include:
-  - project: 'ericvh/gitlab-ci-arm-template'
-    file: '/.gitlab-ci.yml'

@@ -6,7 +6,7 @@ application:
 
 image:
   #repository: imtest
-  repository: registry.gitlab.com/smarter-project/edge-workloads/audio-client/feature-admission-controller
+  repository: ghcr.io/smarter-project/audio-client
   # @default -- chart.appVersion
   tag: ""
   pullPolicy: IfNotPresent
