@@ -3,7 +3,7 @@ name: smarter-audio-client
 description: smarter-audio-client chart for SMARTER edge devices
 home: https://getsmarter.io
 version: 0.0.2
-appVersion: 0.0.3
+appVersion: 3.0.2
 kubeVersion: ">=1.16.0-0"
 keywords:
   - kubernetes
