@@ -1,0 +1,35 @@
+apiVersion: v1
+entries:
+  smarter-audio-client:
+  - annotations:
+      artifacthub.io/changes: |
+        - Fix template
+        - Add annotations
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/maintainers: |
+        - name: Alexandre Ferreira
+          email: alexandref75@gmail.com
+      artifacthub.io/prerelease: "false"
+      artifacthub.io/signKey: |
+        fingerprint: 71EDA4E3D652DC73EB09E3A5387D298C169CF24E
+        url: https://smarter-project.github.io/documentation/pgp_keys.asc
+    apiVersion: v2
+    appVersion: 0.0.3
+    created: "2022-11-07T20:43:13.08945121Z"
+    description: smarter-audio-client chart for SMARTER edge devices
+    digest: 4344c5e6cb7450cb1a051cbca67422e753faaa49e7df268acabe4f123200434d
+    home: https://getsmarter.io
+    icon: https://gitlab.com/uploads/-/system/group/avatar/59012546/ARM1636_Project_Logo_ST2_RGB_V1.png
+    keywords:
+    - kubernetes
+    - device
+    - triton
+    - audio-client
+    kubeVersion: '>=1.16.0-0'
+    name: smarter-audio-client
+    sources:
+    - https://github.com/smarter-project/audio-client
+    urls:
+    - https://github.com/smarter-project/audio-client/releases/download/smarter-audio-client-0.0.2/smarter-audio-client-0.0.2.tgz
+    version: 0.0.2
+generated: "2022-11-07T20:43:13.08945981Z"
