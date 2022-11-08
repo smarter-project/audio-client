@@ -1,11 +1,11 @@
 # smarter-audio-client
 
-This chart provides an example workload for Smarter Edge. The example processes audio input coming from a pulseaudio source through a ML model loaded in smarter-admission-controller (Triton) and uploads the result to MQTT (provided by smarter-fluent-bit).
+This chart provides an example workload for Smarter Edge. The example processes audio input coming from a pulseaudio source through a ML model loaded in smarter-inference (Triton) and uploads the result to MQTT (provided by smarter-fluent-bit).
 
 ## Functionality
 - Records arbitrary length audio clips to send to Nvidia's ML inference server: Triton. Users can either read audio data from pulseaudio, which is configured in the client.conf file of this project, or pass a path to a directory containing audio clips to classify.
 
-- This container assumes that smarter-admission-controller, smarter-pulseaudio and smarter-fluent-bit  are available on the node it is running on. Further, the microphone must be able to output sample at 16Khz. 
+- This container assumes that smarter-inference, smarter-pulseaudio and smarter-fluent-bit  are available on the node it is running on. Further, the microphone must be able to output sample at 16Khz. 
 
 ## Chart values
 
@@ -24,7 +24,7 @@ This chart provides an example workload for Smarter Edge. The example processes 
 * admission_controller
   How to access admission-controller
   * host
-    defaults to smarter-admission-controller
+    defaults to smarter-inference
   * port
     defaults to 2520
 * pulseaudio

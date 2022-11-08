@@ -18,7 +18,7 @@ configuration:
   mqtt:
     host: smarter-fluent-bit
   admission_controller:
-    host: smarter-admission-controller
+    host: smarter-inference
     port: 2520
   pulseaudio:
     host: smarter-pulseaudio
