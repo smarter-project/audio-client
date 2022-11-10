@@ -325,11 +325,11 @@ if __name__ == "__main__":
         help="Inference server URL. Default is localhost:8000.",
     )
     parser.add_argument(
-        "--admission-controller-url",
+        "--smarter-inference-url",
         type=str,
         required=False,
-        default=os.getenv("ADMISSION_CONTROLLER_URL", ""),
-        help="Admission Controller URL. Default is localhost:2520.",
+        default=os.getenv("SMARTER_INFERENCE_URL", ""),
+        help="Smarter-inference URL. Default is localhost:2520.",
     )
     parser.add_argument(
         "-p",
@@ -384,12 +384,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.admission_controller_url:
-        # Use admission control api to upload models then request to load
+    if args.smarter_inference_url:
+        # Use smarter-inference api to upload models then request to load
         logging.info("Uploading vggish model")
         try:
             res = upload_model(
-                args.admission_controller_url,
+                args.smarter_inference_url,
                 "tf",
                 "vggish",
                 "vggish.graphdef",
@@ -403,7 +403,7 @@ if __name__ == "__main__":
         logging.info("Loading vggish model")
         try:
             res = load_model(
-                args.admission_controller_url,
+                args.smarter_inference_url,
                 "vggish",
                 "auto_gen",
                 "passthrough",
@@ -419,13 +419,13 @@ if __name__ == "__main__":
 
         res_json = res.json()
         endpoint_uuid_embeddings = res_json["request_uuid"]
-        triton_url = args.admission_controller_url.split(":")[0] + ":" + "2521"
+        triton_url = args.smarter_inference_url.split(":")[0] + ":" + "2521"
         logging.info(res_json["model_config"])
 
         logging.info("Uploading sound classifier model")
         try:
             res = upload_model(
-                args.admission_controller_url,
+                args.smarter_inference_url,
                 "tf",
                 "ambient_sound_clf",
                 "ambient_sound_clf.graphdef",
@@ -440,7 +440,7 @@ if __name__ == "__main__":
         logging.info("Loading sound classifier model")
         try:
             res = load_model(
-                args.admission_controller_url,
+                args.smarter_inference_url,
                 "ambient_sound_clf",
                 "auto_gen",
                 "passthrough",

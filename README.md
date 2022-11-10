@@ -27,9 +27,9 @@
     - desc: URL to access triton with
     - flag: `-u,--triton-url`
     - default: localhost:8000
-- name: ADMISSION_CONTROLLER_URL
-    - desc: url to access admission controller, default is empty string. If set, triton url will be overwritten with triton within the admission controller
-    - flag: `--admission-controller-url`
+- name: SMARTER_INFERENCE_URL
+    - desc: url to access smarter-inference, default is empty string. If set, triton url will be overwritten within smarter-inference inference access point
+    - flag: `--smarter-inference-url`
     - default: none
 - name: CLASSIFY_SERVICE_POLL_FREQUENCY
     - desc: Seconds in between clip recordings
