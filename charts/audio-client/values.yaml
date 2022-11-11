@@ -17,7 +17,7 @@ configuration:
   pollfrequency: 20
   mqtt:
     host: smarter-fluent-bit
-  admission_controller:
+  smarter_inference:
     host: smarter-inference
     port: 2520
   pulseaudio:
