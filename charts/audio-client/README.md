@@ -21,7 +21,7 @@ This chart provides an example workload for Smarter Edge. The example processes 
   MQTT destination information
   * host
     Ip or hostname defaults to smarter-fluent-bit
-* smarter-inference
+* smarter_inference
   How to access smarter-inference
   * host
     defaults to smarter-inference
