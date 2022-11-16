@@ -2,7 +2,7 @@ apiVersion: v2
 name: smarter-audio-client
 description: smarter-audio-client chart for SMARTER edge devices
 home: https://getsmarter.io
-version: 0.0.5
+version: 0.0.6
 appVersion: v3.1.2
 kubeVersion: ">=1.16.0-0"
 keywords:
